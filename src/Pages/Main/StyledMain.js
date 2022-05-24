@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { keyframes, css } from 'styled-components'
 
 export const Container = styled.div`
   max-width: 700px;
@@ -33,9 +33,21 @@ export const Form = styled.form`
   }
 `
 
-export const Button = styled.button.attrs({
-  type: 'submit'
-})`
+// button animation
+const animate = keyframes`
+from {
+  transform: rotate(0deg);
+} 
+to{
+  transform: rotate(360deg);
+
+}
+`
+
+export const Button = styled.button.attrs(props => ({
+  type: 'submit',
+  disabled: props.Loading
+}))`
   background: #0d2636;
   border: 0;
   border-radius: 4px;
@@ -44,4 +56,48 @@ export const Button = styled.button.attrs({
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  ${props =>
+    props.Loading &&
+    css`
+      svg {
+        animation: ${animate} 2x linear infinite;
+      }
+    `}
+`
+export const List = styled.ul`
+  list-style: none;
+  margin-top: 20px;
+
+  li {
+    padding: 15px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    // aplica do segundo em diante
+    & + li {
+      border-top: 1px solid #eee;
+    }
+    a {
+      color: #0d2636;
+      text-decoration: none;
+    }
+  }
+`
+export const DeleteButton = styled.button.attrs({
+  type: 'button'
+})`
+  background: transparent;
+  color: #0d2636;
+  border: 0;
+  padding: 8px 7px;
+  outline: 0;
+  border-radius: 4px;
 `
