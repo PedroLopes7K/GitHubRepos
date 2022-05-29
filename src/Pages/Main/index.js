@@ -1,24 +1,55 @@
 import React from 'react'
 import { FaGithub, FaPlus, FaSpinner, FaBars, FaTrash } from 'react-icons/fa'
 import { Container, Button, Form, List, DeleteButton } from './StyledMain'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../../Service/Api'
 export default function Main() {
   const [newRepo, setNewRepo] = useState('')
   const [repositorys, setRepositorys] = useState([])
   const [loading, setLoading] = useState(false)
+  const [alert, setAlert] = useState(false)
+
+  // SEARCH
+  useEffect(() => {
+    const resposStorage = localStorage.getItem('Repos')
+    if (resposStorage) {
+      setRepositorys(JSON.parse(resposStorage))
+    }
+  }, [])
+
+  // SAVE CHANGES
+  useEffect(() => {
+    localStorage.setItem('Repos', JSON.stringify(repositorys))
+  }, [repositorys])
 
   function inputChange(e) {
     setNewRepo(e.target.value)
+    setAlert(false)
   }
 
   const handleSubmit = useCallback(
     e => {
       e.preventDefault()
+      // let hasRepo = newRepo
+
       async function submit() {
         setLoading(true)
+        setAlert(false)
         try {
+          if (newRepo === '') {
+            throw new Error('Input Empty!')
+          }
+          // if (repositorys.includes(newRepo)) {
+          //   alert('Repository already exists!')
+          // }
           const response = await api.get(`repos/${newRepo}`)
+          const hasRepo = repositorys.find(repo => repo.name === newRepo)
+
+          if (hasRepo) {
+            // alert('Repository already exists!')
+            throw new Error('Repository already exists!')
+          }
           // console.log(response.data)
           const data = {
             name: response.data.full_name
@@ -26,6 +57,8 @@ export default function Main() {
           setRepositorys([...repositorys, data])
           setNewRepo('')
         } catch (error) {
+          setAlert(true)
+
           console.log(error)
         } finally {
           setLoading(false)
@@ -50,7 +83,7 @@ export default function Main() {
         <FaGithub size={25} />
         My Repositorys
       </h1>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} error={alert}>
         <input
           type="text"
           placeholder="Add Repository"
@@ -74,9 +107,9 @@ export default function Main() {
               <FaTrash size={14} />
             </DeleteButton>
             <span>{repo.name}</span>
-            <a href="">
+            <Link to={`/repos/${encodeURIComponent(repo.name)}`}>
               <FaBars size={20} />
-            </a>
+            </Link>
           </li>
         ))}
       </List>
